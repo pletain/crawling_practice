@@ -15,16 +15,60 @@ async function run (){
 	const browser = await puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox'] });
     const page = await browser.newPage();  
     
+	
+	page.on("dialog" , (dialog) =>{
+		dialog.accept();
+	});
+	
 
     // 웹사이트 로딩
-    await page.goto('https://search.naver.com/search.naver?where=nexearch&sm=top_hty&fbm=1&ie=utf8&query=%EC%BD%94%EC%8A%A4%ED%94%BC', {timeout: 0, waitUntil: 'domcontentloaded'});
+    await page.goto('http://localhost:3000/', {timeout: 0, waitUntil: 'domcontentloaded'});
 
     // 상단 테이블의 th 제목을 가져오고 싶은경우
-    const tdName = await page.$eval('.spt_con strong', strong => strong.textContent.trim() );
-    console.log(tdName);
+    // const tdName = await page.$eval('.list_conts_wrap em', em => em.textContent.trim() );
+    // console.log(tdName);
 
+	await page.waitForSelector('.btn-default');
+	await page.click('.btn-default');
+	
+	// //랜덤으로 데이터 Create하기
+	await page.waitForSelector('.btn-primary');
+	
+	await page.evaluate( (a , b) => { //인자를 a, b를 받을 것인데
+		document.querySelector('input[name=name]').value = a;
+		document.querySelector('textarea[name=description]').value = b;
+		document.querySelector('.btn-primary').click(); // 이제 작성하기 버튼을 눌러라.
+	} , insert_name, insert_description); //a,b는 각각 랜덤 이름과 설명이다.
+	
+	await page.waitForSelector('.btn-default')
+	
+	await page.click('table tr:nth-child(2) td:nth-child(1) a');
+	
+	await page.waitForSelector('.btn-primary')
+	await page.click('.btn-primary');
+	await page.waitForSelector('.btn-primary')
+	
+	
+	
+	
+	
+	//랜덤으로 데이터 Update하기
+	await page.evaluate( (a , b) =>{
+		document.querySelector('input[name=name]').value = a;
+		document.querySelector('textarea[name=description]').value = b;
+		document.querySelector('.btn-primary').click();
+	}, modi_name, modi_description);
+	
+	//데이터 Delete 하기
+	await page.waitForSelector('.btn-default')
+	await page.click('.btn-default')
+	await page.waitForSelector('.btn-default')
+	
+	await page.click('.btn-danger'); //삭제버튼 클릭!
+	
+	
     // // 브라우저 닫기
-    // await browser.close();
+    await browser.close();
 }
 
 run();
